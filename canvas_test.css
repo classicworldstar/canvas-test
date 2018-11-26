@@ -1,0 +1,138 @@
+
+
+div#div_img_id{
+    position: relative;
+    width:1fr;  
+    height:300px; 
+    border:dashed 4px #7b9cc4;
+}
+div#div_img_id>*{
+    position: absolute;
+}
+
+cancas#cvn_bg_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black;     
+}
+canvas#cnv_balloon1_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_balloon2_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_balloon3_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_balloon4_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_balloon5_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+
+div#div_map_img_id{
+    position: relative;
+    width:300px;  
+    height:150px; 
+    border:dashed 4px #7b9cc4;
+}
+div#div_map_img_id>*{
+    position: absolute;
+}
+
+cancas#cvn_map_bg_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black;     
+}
+canvas#cnv_map_balloon1_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_map_balloon2_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_map_balloon3_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_map_balloon4_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_map_balloon5_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+
+div#div_cam_img_id{
+    position: relative;
+    width:300px;  
+    height:150px; 
+    border:dashed 4px #7b9cc4;
+}
+div#div_cam_img_id>*{
+    position: absolute;
+}
+
+cancas#cvn_cam_bg_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black;     
+}
+canvas#cnv_cam_balloon1_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_cam_balloon2_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_cam_balloon3_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_cam_balloon4_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+canvas#cnv_cam_balloon5_id{
+    width:1fr;  
+    height:1fr; 
+    border:1px solid black; 
+}
+
+
+#test_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;
+}
+
+div#txt_log_id{
+    font-size: 10px; 
+    width:1fr;  
+    height:120px; 
+    border:1px solid black; 
+    overflow:auto 
+}
