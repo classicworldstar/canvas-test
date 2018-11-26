@@ -18,6 +18,7 @@ var arryCnv = [
     {     
         name : "",
         area : "",
+        background : true,
         cnv: null,
         ctx: null,
         img: null,
@@ -37,17 +38,17 @@ window.onload=function(){
         //document.getElementById("div_img_id").innerHTML += '<a>test</a>';
         arryCnv.length = 0;
 
-        drawImageBg("map","cnv_map_bg_id", "cam0.jpg",0,0);
-        createImage("map","cnv_map_balloon1_id", "balloon1.png",0,0);
-        createImage("map","cnv_map_balloon2_id", "balloon2.png",50,0);
-        createImage("map","cnv_map_balloon3_id", "balloon3.png",0,50);
-        createImage("map","cnv_map_balloon4_id", "balloon4.png",50,50);
+        drawImageBg("map", true,"cnv_map_bg_id", "cam0.jpg",0,0);
+        createImage("map", false,"cnv_map_balloon1_id", "balloon1.png",0,0);
+        createImage("map", false,"cnv_map_balloon2_id", "balloon2.png",50,0);
+        createImage("map", false,"cnv_map_balloon3_id", "balloon3.png",0,50);
+        createImage("map", false,"cnv_map_balloon4_id", "balloon4.png",50,50);
 
-        drawImageBg("cam","cnv_cam_bg_id", "cam0.jpg",0,0);
-        createImage("cam","cnv_cam_balloon1_id", "balloon1.png",0,0);
-        createImage("cam","cnv_cam_balloon2_id", "balloon2.png",50,0);
-        createImage("cam","cnv_cam_balloon3_id", "balloon3.png",0,50);
-        createImage("cam","cnv_cam_balloon4_id", "balloon4.png",50,50);
+        drawImageBg("cam", true,"cnv_cam_bg_id", "cam0.jpg",0,0);
+        createImage("cam", false,"cnv_cam_balloon1_id", "balloon1.png",0,0);
+        createImage("cam", false,"cnv_cam_balloon2_id", "balloon2.png",50,0);
+        createImage("cam", false,"cnv_cam_balloon3_id", "balloon3.png",0,50);
+        createImage("cam", false,"cnv_cam_balloon4_id", "balloon4.png",50,50);
 
     };
     document.getElementById("div_map_img_id").addEventListener("mousedown", function(e){
@@ -97,7 +98,7 @@ window.onload=function(){
 
 }
 
-function drawImageBg(area, target, fileName, x, y) {
+function drawImageBg(area, bg, target, fileName, x, y) {
     var canvas = document.getElementById(target);
     if ( ! canvas || ! canvas.getContext ) { return false; }
     /* Imageオブジェクトを生成 */
@@ -124,12 +125,12 @@ function drawImageBg(area, target, fileName, x, y) {
         }
   //    ctx.drawImage(img, x, y, 400, 300);  
         ctx.drawImage(img, x, y, TranceWidth, TranceHeight); 
-        creatBalloon(area, target,canvas,ctx,img,canvas.getBoundingClientRect().left,canvas.getBoundingClientRect().top,x,y,TranceWidth,TranceHeight); 
+        creatBalloon(target, area, bg, canvas,ctx,img,canvas.getBoundingClientRect().left,canvas.getBoundingClientRect().top,x,y,TranceWidth,TranceHeight); 
     }
   }
   
 
-function createImage(area, target, fileName, x, y) {
+function createImage(area, bg, target, fileName, x, y) {
     var canvas = document.getElementById(target);
     if ( ! canvas || ! canvas.getContext ) { return false; }
     /* Imageオブジェクトを生成 */
@@ -148,7 +149,7 @@ function createImage(area, target, fileName, x, y) {
         
         setAxisText(ctx, img, x, y);
         
-        creatBalloon(area, target, canvas, ctx, img, canvas.getBoundingClientRect().left, canvas.getBoundingClientRect().top, x, y, img.width, img.height);
+        creatBalloon(target, area, bg, canvas, ctx, img, canvas.getBoundingClientRect().left, canvas.getBoundingClientRect().top, x, y, img.width, img.height);
         return ctx;
     }
     img.onerror = function() {
@@ -163,17 +164,18 @@ function redraw(area, target){
     var pageY = canvas.getBoundingClientRect().top;
     
     var data = IsHitballoon(area, start.x - pageX, start.y - pageY);
-    if(data){
+    if(data.background == false){
         data.ctx.clearRect(0, 0, data.cnv.getBoundingClientRect().width, data.cnv.getBoundingClientRect().height);
         data.ctx.drawImage(data.img, end.x - pageX, end.y - pageY);
         setBalloonPos(data.cnv, end.x - pageX, end.y - pageY);
     }
 }
 
-function creatBalloon(area, target, cnv, ctx, img, pageX, pageY, offsetX, offsetY, width, height){
+function creatBalloon(target, area, bg, cnv, ctx, img, pageX, pageY, offsetX, offsetY, width, height){
     var data = {
         name : target,
         area : area,
+        background  : bg,
         cnv     : cnv,
         ctx     : ctx,
         img     : img,
