@@ -1,0 +1,42 @@
+
+div#div_map_img_id{
+    border:dashed 4px #7b9cc4;
+}
+
+div#div_cam_img_id{
+    border:dashed 4px #7b9cc4;
+}
+
+
+#init_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;
+}
+#drawmode_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;
+}
+#set_polygon_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;
+}
+
+#json_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;    
+}
+#clear_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;    
+}
+#restore_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;     
+}
+div#txt_log_id{
+    font-size: 10px; 
+    width:1fr;  
+    height:120px; 
+    border:1px solid black; 
+    overflow:auto 
+}

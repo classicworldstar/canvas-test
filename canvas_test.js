@@ -18,7 +18,7 @@ var arryCnv = [
     {     
         name : "",
         area : "",
-        background : true,
+        background : true, //背景画像判定　true：背景画像
         cnv: null,
         ctx: null,
         img: null,
@@ -38,7 +38,7 @@ window.onload=function(){
         //document.getElementById("div_img_id").innerHTML += '<a>test</a>';
         arryCnv.length = 0;
 
-        drawImageBg("map", true,"cnv_map_bg_id", "cam0.jpg",0,0);
+        drawImageBg("map", true,"cnv_map_bg_id", "top.jpg",0,0);
         createImage("map", false,"cnv_map_balloon1_id", "balloon1.png",0,0);
         createImage("map", false,"cnv_map_balloon2_id", "balloon2.png",50,0);
         createImage("map", false,"cnv_map_balloon3_id", "balloon3.png",0,50);
@@ -124,7 +124,7 @@ function drawImageBg(area, bg, target, fileName, x, y) {
             var TranceWidth = conpRatio * imageWidth;
         }
   //    ctx.drawImage(img, x, y, 400, 300);  
-        ctx.drawImage(img, x, y, TranceWidth, TranceHeight); 
+        ctx.drawImage(img, 0, 0, img.width, img.height, x, y, TranceWidth, TranceHeight); 
         creatBalloon(target, area, bg, canvas,ctx,img,canvas.getBoundingClientRect().left,canvas.getBoundingClientRect().top,x,y,TranceWidth,TranceHeight); 
     }
   }
@@ -145,8 +145,8 @@ function createImage(area, bg, target, fileName, x, y) {
         //canvas.height = img.height;
         //canvas.width  = img.width;
 
-        ctx.drawImage(img, x, y);   
-        
+        ctx.drawImage(img, 0, 0, img.width, img.height, x, y, img.width, img.height);           
+
         setAxisText(ctx, img, x, y);
         
         creatBalloon(target, area, bg, canvas, ctx, img, canvas.getBoundingClientRect().left, canvas.getBoundingClientRect().top, x, y, img.width, img.height);
@@ -166,8 +166,24 @@ function redraw(area, target){
     var data = IsHitballoon(area, start.x - pageX, start.y - pageY);
     if(data.background == false){
         data.ctx.clearRect(0, 0, data.cnv.getBoundingClientRect().width, data.cnv.getBoundingClientRect().height);
-        data.ctx.drawImage(data.img, end.x - pageX, end.y - pageY);
-        setBalloonPos(data.cnv, end.x - pageX, end.y - pageY);
+        var pos_x1 = 0;
+        var pos_x2 = data.cnv.getBoundingClientRect().width;
+        var pos_y1 = 0;
+        var pos_y2 = data.cnv.getBoundingClientRect().height;
+        var offsetX = end.x - pageX;
+        var offsetY = end.y - pageY;
+        if(offsetX < pos_x1){
+            offsetX = 0;
+        }else if(pos_x2 < offsetX){
+            offsetX = pos_x2;
+        }
+        if(offsetY < pos_y1){
+            offsetY = 0;
+        }else if(pos_y2 < offsetY){
+            offsetY = pos_y2;
+        }
+        data.ctx.drawImage(data.img, 0, 0, data.img.width, data.img.height, offsetX, offsetY, data.img.width, data.img.height);
+        setBalloonPos(data.cnv, offsetX, offsetY);
     }
 }
 
@@ -210,7 +226,7 @@ function setAxisText(ctx, img,x,y){
 function IsHitballoon(area, x, y){
     var data = arryCnv;
     for(var i = 0; i < data.length; i++){
-        if(data[i].area == area){
+        if(data[i].area == area && data[i].background == false){
             var pos_x1 = data[i].offsetX;
             var pos_y1 = data[i].offsetY;
             var pos_x2 = pos_x1 + data[i].width;
@@ -218,15 +234,15 @@ function IsHitballoon(area, x, y){
 
             if(pos_x1 <= x && x < pos_x2){
                 if(pos_y1 <= y && y < pos_y2){
-                    //var log = "hitImg:" + String(pos_x1) + "<=" + String(x) + "<" + String(pos_x2) + "|" + String(pos_x1) + "+" + String(data[i].width) + ", " + String(pos_y1) + "<=" + String(y) + "<" + String(pos_y2) + "|" + String(pos_y1) + "+" + String(data[i].height);
-                    //addLog(log);
+                    var log = "hitImg:" + String(pos_x1) + "<=" + String(x) + "<" + String(pos_x2) + "|" + String(pos_x1) + "+" + String(data[i].width) + ", " + String(pos_y1) + "<=" + String(y) + "<" + String(pos_y2) + "|" + String(pos_y1) + "+" + String(data[i].height);
+                    addLog(log);
                     return data[i];
                 }   
             }
         }
     }
-    //var log = "nullImg:" + String(pos_x1) + "<=" + String(x) + "<" + String(pos_x2) + "|" + String(pos_x1) + "+" + String(data[i].width) + ", " + String(pos_y1) + "<=" + String(y) + "<" + String(pos_y2) + "|" + String(pos_y1) + "+" + String(data[i].height);
-    //addLog(log);
+    var log = "nullImg,area:" + area + ",click_pos:" + String(x) + "," + String(y);
+    addLog(log);
     return null;
 }
 

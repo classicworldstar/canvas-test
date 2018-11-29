@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>canvas-test1</title>    
+    <meta charset="utf-8">
+    <link href="canvas_test1.css" rel="stylesheet" type="text/css" media="all">
+    <!--[if IE]>
+    <script type="text/javascript" src="excanvas.js"></script>
+    <![endif]-->
+    <!--　 fabric.jsの読込み　-->
+    <script type="text/javascript" src="./libs/fabric.js"></script>
+    <script src="canvas_test1.js"></script>    
+</head>
+
+<body>
+    <input type="button" id="init_button_id" class="button" value="init">
+    <input type="button" id="drawmode_button_id" class="button" value="select off" disabled>
+    <input type="button" id="set_polygon_button_id" class="button" value="set polygon">
+    <input type="button" id="json_button_id" class="button" value="JSON">
+    <input type="button" id="clear_button_id" class="button" value="clear">
+    <input type="button" id="restore_button_id" class="button" value="restore">
+    
+    <div id="div_map_img_id">
+        <canvas id="canvas1" width="640" height="480" style="border:1px solid;"></canvas>
+    </div>
+    <div id="div_cam_img_id">
+        <canvas id="canvas2" width="640" height="480" style="border:1px solid;"></canvas>
+    </div>
+    
+    <div type="text" id="txt_log_id" disabled="disabled"></div>
+</body>
+    
+</html>
