@@ -42,19 +42,24 @@ var RegionData = [
     {
         name: "", //camera1, camera2, ・・・
         region1: {
-            cameraPoints: [[]],
-            mapPoints: [[]]
+            mapPoints: [],
+            camPoints: [],
         },
         region2: {
-            cameraPoints: [[]],
-            mapPoints: [[]]
+            mapPoints: [],
+            camPoints: [],
         },
         region3: {
-            cameraPoints: [[]],
-            mapPoints: [[]]
-        }
+            mapPoints: [],
+            camPoints: [],
+        },
+        finish: false,
     }
 ];
+var cameraNo = 0;
+var regionNo = 0;
+//json保存を作成する機能を作ったら  ai-posingへ移植する
+//mapとcamのimageファイルをimgのmapまたはArrayに格納する
 
 var canvas1 = null;
 var canvas2 = null;
@@ -62,12 +67,26 @@ var data1 = null;
 var data2 = null;
 var mapFileName = "top.jpg";
 var camFileName = "cam0.jpg";
+var bgImgSize = {
+    map:{
+        width: 0,
+        height: 0,
+        naturalWidth: 0,
+        naturalHeight:0
+    },
+    cam:{
+        width: 0,
+        height: 0,
+        naturalWidth: 0,
+        naturalHeight:0
+    }
+};
 
 window.onload=function(){
 
     document.getElementById("init_button_id").onclick = function(e) {
-        // ここに#buttonをクリックしたら発生させる処理を記述する
-        //document.getElementById("div_img_id").innerHTML += '<a>test</a>';
+        // Initialize
+        regionNo = 1;
         RegionData.length = 0;
         mapPoints.length = 0;
         camPoints.length = 0;
@@ -82,9 +101,10 @@ window.onload=function(){
             drawImage(canvas2, camFileName);
         }
         document.getElementById("drawmode_button_id").disabled = "";
+        setRegionData(cameraNo, "camera00");
     };
     document.getElementById("drawmode_button_id").onclick = function(e) {
-        // ここに#buttonをクリックしたら発生させる処理を記述する
+        // draw mode on <-> off
 
         if(canvas1.isDrawingMode == true){
             document.getElementById("drawmode_button_id").value = "select on";
@@ -97,9 +117,12 @@ window.onload=function(){
         }
     };
     document.getElementById("set_polygon_button_id").onclick = function(e) {
-        // ここに#buttonをクリックしたら発生させる処理を記述する
+        // set polygon data for n region.
         drawPolygon(canvas1, mapPoints);
+        mapPoints.length = 0;
         drawPolygon(canvas2, camPoints);
+        camPoints.length = 0;
+        regionNo++;
     };
 
     document.getElementById("json_button_id").onclick = function(e) {
@@ -108,8 +131,11 @@ window.onload=function(){
         data2 = JSON.stringify(canvas2);
         addLog(data1);
         addLog(data2);
-
+        finishRegionData(cameraNo); // finish the regiondata of cameraXX.
+        saveJsonData("camera00.json");
+        regionNo = 0;
     };
+    /*
     document.getElementById("clear_button_id").onclick = function(e) {
         // ここに#buttonをクリックしたら発生させる処理を記述する
         canvas1.clear().renderAll();
@@ -120,7 +146,7 @@ window.onload=function(){
         canvas1.loadFromJSON(data1).renderAll();
         canvas2.loadFromJSON(data2).renderAll();
     };
-
+    */
     document.getElementById("div_map_img_id").addEventListener("mousedown", function(e){        
         drawCircle(canvas1, mapPoints, e.offsetX, e.offsetY);
         //drawImage(canvas1, mapFileName);
@@ -141,14 +167,26 @@ window.onload=function(){
 }
 
 function drawImage(canvas, fileName){
-    var width = canvas.getWidth();
-    var height = canvas.getHeight();
-    canvas.setBackgroundImage(fileName, canvas.renderAll.bind(canvas), {
-        backgroundImageOpacity: 0.5,
-        backgroundImageStretch: false,
-        width: width,
-        height: height,
-    });
+    var img = new Image();
+    img.src = fileName;//+'?' + new Date().getTime();
+    /* 画像が読み込まれるのを待ってから処理を続行 */
+    img.onload = function() {
+        canvas.setBackgroundImage(fileName, canvas.renderAll.bind(canvas), {
+            backgroundImageOpacity: 0.5,
+            backgroundImageStretch: false,
+        }); 
+        if(canvas.lowerCanvasEl.id == "canvas1"){
+            bgImgSize.map.width = img.width;
+            bgImgSize.map.height = img.height;
+            bgImgSize.map.naturalWidth = img.naturalWidth;
+            bgImgSize.map.naturalHeight = img.naturalHeight;          
+        }else if(canvas.lowerCanvasEl.id == "canvas2"){
+            bgImgSize.cam.width = img.width;
+            bgImgSize.cam.height = img.height;
+            bgImgSize.cam.naturalWidth = img.naturalWidth;
+            bgImgSize.cam.naturalHeight = img.naturalHeight;          
+        }
+    }
 }
 
 function drawCircle(canvas, targetPoints, offsetX, offsetY){
@@ -172,20 +210,94 @@ function drawCircle(canvas, targetPoints, offsetX, offsetY){
 
 function drawPolygon(canvas, targetPoints){
     var data = [];
+    var normData = [];
     data.length = 0;
     for(var i = 0; i < targetPoints.length; i++){
         var points = {
             x : targetPoints[i].offsetX,
             y : targetPoints[i].offsetY
         };
+        var normPoints = {
+            x : targetPoints[i].offsetX,
+            y : targetPoints[i].offsetY
+        };
        data.push(points);
+       normData.push(normPoints);
     }
     var left = getleft(data);
     var top = gettop(data);
     if(left != null && top != null){
         addPolygon(canvas, data, left, top);
     }
+
+    //normalization 0.0 <-> 1.0
+    for(var i = 0; i < normData.length; i++){
+        if(canvas.lowerCanvasEl.id == "canvas1"){ //map
+            normData[i].x = normData[i].x / bgImgSize.map.width; 
+            normData[i].y = normData[i].y / bgImgSize.map.height; 
+        }else if(canvas.lowerCanvasEl.id == "canvas2"){ //cam
+            normData[i].x = normData[i].x / bgImgSize.cam.width; 
+            normData[i].y = normData[i].y / bgImgSize.cam.height; 
+        }
+        
+    }
+    addRegionData(cameraNo, canvas, normData, regionNo);
+
 }
+ 
+function setRegionData(camNo, name){
+    var data =     {
+        name: name, 
+        region1: {
+            mapPoints: [],
+            camPoints: [],
+        },
+        region2: {
+            mapPoints: [],
+            camPoints: [],
+        },
+        region3: {
+            mapPoints: [],
+            camPoints: [],
+        },
+        finish: false,
+    };
+    RegionData.push(data);
+}
+function addRegionData(camNo, canvas, data, regionNo){
+    if(canvas.lowerCanvasEl.id == "canvas1"){ //map
+        if(regionNo == 1){
+            RegionData[camNo].region1.mapPoints.push(data);
+        }else if(regionNo == 2){
+            RegionData[camNo].region2.mapPoints.push(data);
+        }else if(regionNo == 3){
+            RegionData[camNo].region3.mapPoints.push(data);
+        }
+    }else if(canvas.lowerCanvasEl.id == "canvas2"){ //cam
+        if(regionNo == 1){
+            RegionData[camNo].region1.camPoints.push(data);
+        }else if(regionNo == 2){
+            RegionData[camNo].region2.camPoints.push(data);
+        }else if(regionNo == 3){
+            RegionData[camNo].region3.camPoints.push(data);
+        }   
+    }
+}
+function finishRegionData(camNo){
+    RegionData[camNo].finish = true;
+}
+
+function saveJsonData(fileName){
+    const blob = new Blob([JSON.stringify(RegionData, null, '  ')],
+    {type: 'application\/json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
 function addCircle(canvas, left, top, radius){
     var circle = new fabric.Circle({
         left: left,
