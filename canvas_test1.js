@@ -59,15 +59,15 @@ var RegionData = [
 var cameraNo = 0;
 var regionNo = 0;
 //json保存を作成する機能を作ったら  ai-posingへ移植する
-//mapとcamのimageファイルをimgのmapまたはArrayに格納する
 
-var canvas1 = null;
-var canvas2 = null;
-var data1 = null;
-var data2 = null;
-var mapFileName = "top.jpg";
+
+var canvas1 = null; //map image display 
+var canvas2 = null; //camera image display 
+var data1 = null; //json data of canvas1 
+var data2 = null; //json data of canvas2 
+var mapFileName = "top.jpg"; 
 var camFileName = "cam0.jpg";
-var bgImgSize = {
+var bgImgSize = { //information of background image at map area and camera area
     map:{
         width: 0,
         height: 0,
@@ -100,9 +100,10 @@ window.onload=function(){
             canvas2.isDrawingMode = true;
             drawImage(canvas2, camFileName);
         }
-        document.getElementById("drawmode_button_id").disabled = "";
+        //document.getElementById("drawmode_button_id").disabled = "";
         setRegionData(cameraNo, "camera00");
     };
+    /*
     document.getElementById("drawmode_button_id").onclick = function(e) {
         // draw mode on <-> off
 
@@ -116,6 +117,7 @@ window.onload=function(){
             canvas2.isDrawingMode = true;
         }
     };
+    */
     document.getElementById("set_polygon_button_id").onclick = function(e) {
         // set polygon data for n region.
         drawPolygon(canvas1, mapPoints);
