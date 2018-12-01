@@ -2,16 +2,22 @@ var mapPoints = [
     {     
         name    : "", //"area1", "area2",・・・・
         index   : 0,
-        offsetX : 0,
-        offsetY : 0
+        circle  : null, //bule circle display object
+        text    : null, //axis display object
+        focus   : true,
+//        offsetX : 0,
+//        offsetY : 0
     }
 ];
 var camPoints = [
     {     
         name    : "", //"area1", "area2",・・・・
         index   : 0,
-        offsetX : 0,
-        offsetY : 0
+        circle  : null,
+        text    : null,
+        focus   : true,
+//        offsetX : 0,
+//        offsetY : 0
     }
 ];
 /*
@@ -53,6 +59,7 @@ var RegionData = [
             mapPoints: [],
             camPoints: [],
         },
+        focusRegionNo: 1,
         finish: false,
     }
 ];
@@ -100,10 +107,10 @@ window.onload=function(){
             canvas2.isDrawingMode = true;
             drawImage(canvas2, camFileName);
         }
-        //document.getElementById("drawmode_button_id").disabled = "";
+        document.getElementById("drawmode_button_id").disabled = "";
         setRegionData(cameraNo, "camera00");
     };
-    /*
+    
     document.getElementById("drawmode_button_id").onclick = function(e) {
         // draw mode on <-> off
 
@@ -117,7 +124,7 @@ window.onload=function(){
             canvas2.isDrawingMode = true;
         }
     };
-    */
+    
     document.getElementById("set_polygon_button_id").onclick = function(e) {
         // set polygon data for n region.
         drawPolygon(canvas1, mapPoints);
@@ -150,16 +157,27 @@ window.onload=function(){
     };
     */
     document.getElementById("div_map_img_id").addEventListener("mousedown", function(e){        
-        drawCircle(canvas1, mapPoints, e.offsetX, e.offsetY);
-        //drawImage(canvas1, mapFileName);
+        //canvas1,map
+        if(canvas1.isDrawingMode){
+            //set clicked point, draw circle.
+            drawCircle(canvas1, mapPoints, e.offsetX, e.offsetY);
+        }else{
+            //move point, drug and drop
+
+        }
         addLog("img_map_img_id,mousedown");
     });
     document.getElementById("div_map_img_id").addEventListener("mouseup", function(e){
         addLog("img_map_img_id,mouseup");
     });
     document.getElementById("div_cam_img_id").addEventListener("mousedown", function(e){
-        drawCircle(canvas2, camPoints, e.offsetX, e.offsetY);        
-        //drawImage(canvas2, camFileName);
+        //canvas2,camera
+        if(canvas2.isDrawingMode){
+            //set clicked point, draw circle.
+            drawCircle(canvas2, camPoints, e.offsetX, e.offsetY);
+        }else{
+            //move point, drug and drop
+        }        
         addLog("img_map_img_id,mousedown");
     });
     document.getElementById("div_cam_img_id").addEventListener("mouseup", function(e){
@@ -193,19 +211,23 @@ function drawImage(canvas, fileName){
 
 function drawCircle(canvas, targetPoints, offsetX, offsetY){
     if(canvas.isDrawingMode == true){
-        var circle = addCircle(canvas,offsetX-5,offsetY-5,5);
-        var Points = {     
+        var circle = addCircle(canvas,offsetX-5,offsetY-5,5, 'red');
+        var text = setCircleAxis(canvas,offsetX-5,offsetY-5,5);
+        var x = circle.left;
+        var y = circle.top;
+        var Points = {  
                 name    : "",
                 index   : 0,
-                offsetX : 0,
-                offsetY : 0
+                circle  : circle,
+                text    : text,
+                focus   : true, 
+//                offsetX : offsetX,
+//                offsetY : offsetY
         };
         targetPoints.push(Points);
         var i = targetPoints.length-1;
-        targetPoints[i].index = i;
         targetPoints[i].name = "area" + String(targetPoints[i].index);
-        targetPoints[i].offsetX = offsetX;
-        targetPoints[i].offsetY = offsetY;
+        targetPoints[i].index = i;
     }else{
     }
 }
@@ -215,13 +237,16 @@ function drawPolygon(canvas, targetPoints){
     var normData = [];
     data.length = 0;
     for(var i = 0; i < targetPoints.length; i++){
+        var circle = addCircle(canvas,targetPoints[i].circle.left,targetPoints[i].circle.top, 5,'blue');
+        canvas.remove(targetPoints[i].circle);
+        targetPoints[i].circle = circle;
         var points = {
-            x : targetPoints[i].offsetX,
-            y : targetPoints[i].offsetY
+            x : targetPoints[i].circle.left + targetPoints[i].circle.radius,
+            y : targetPoints[i].circle.top + targetPoints[i].circle.radius
         };
         var normPoints = {
-            x : targetPoints[i].offsetX,
-            y : targetPoints[i].offsetY
+            x : targetPoints[i].circle.left + targetPoints[i].circle.radius,
+            y : targetPoints[i].circle.top + targetPoints[i].circle.radius
         };
        data.push(points);
        normData.push(normPoints);
@@ -246,7 +271,19 @@ function drawPolygon(canvas, targetPoints){
     addRegionData(cameraNo, canvas, normData, regionNo);
 
 }
- 
+function addPolygon(canvas, data, left, top){
+    var polygon = new fabric.Polygon(data, {
+        left: left,  
+        top: top,
+        fill: 'rgba(200, 200, 200, 0.5)',
+        stroke: 'rgba(255, 0, 0, 0.5)',
+        strokeWidth: 3,
+        selectable: false
+    });
+    canvas.add(polygon);
+}
+
+
 function setRegionData(camNo, name){
     var data =     {
         name: name, 
@@ -262,6 +299,7 @@ function setRegionData(camNo, name){
             mapPoints: [],
             camPoints: [],
         },
+        focusRegionNo:1,
         finish: false,
     };
     RegionData.push(data);
@@ -289,28 +327,15 @@ function finishRegionData(camNo){
     RegionData[camNo].finish = true;
 }
 
-function saveJsonData(fileName){
-    const blob = new Blob([JSON.stringify(RegionData, null, '  ')],
-    {type: 'application\/json'});
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-}
-
-function addCircle(canvas, left, top, radius){
+function addCircle(canvas, left, top, radius, fill){
     var circle = new fabric.Circle({
         left: left,
         top: top,
-        fill: 'blue',
+        fill: fill,
         radius: radius
     });
 
     canvas.add(circle);
-    sPoints = "[" + String(left+radius) + "," + String(top+radius) + "]";
-    addAxisText(sPoints, canvas, left+radius*2, top+radius*2, 10, 'black');
 
     if(circle){
         return circle;
@@ -318,19 +343,13 @@ function addCircle(canvas, left, top, radius){
         return null;
     }
 }
-
-function addPolygon(canvas, data, left, top){
-    var polygon = new fabric.Polygon(data, {
-        left: left,  
-        top: top,
-        fill: 'rgba(200, 200, 200, 0.5)',
-        stroke: 'rgba(255, 0, 0, 0.5)',
-        strokeWidth: 3,
-        selectable: false
-    });
-    canvas.add(polygon);
+function removeCircle(canvas, circle){
+    canvas.remove(circle);
 }
-
+function setCircleAxis(canvas, left, top, radius){
+    sPoints = "[" + String(left+radius) + "," + String(top+radius) + "]";
+    addAxisText(sPoints, canvas, left+radius*2, top+radius*2, 10, 'black');
+}
 function addAxisText(sInput, canvas, left, top, font_size, color){
     var text = new fabric.Text(sInput, {
         left: left,
@@ -343,6 +362,17 @@ function addAxisText(sInput, canvas, left, top, font_size, color){
     canvas.add(text);
 }
 
+function saveJsonData(fileName){
+    const blob = new Blob([JSON.stringify(RegionData, null, '  ')],
+    {type: 'application\/json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
 function getleft(data){
     if(data.length < 1){
         return null;
@@ -352,6 +382,20 @@ function getleft(data){
     var ret = data[0].x;
     for(var i = 0; i < data.length-1; i++){
         if(ret > data[i+1].x){
+            ret = data[i+1].x;
+        }
+    }
+    return ret;
+}
+function getright(data){
+    if(data.length < 1){
+        return null;
+    }else if(data.length < 2){
+        return data[i];
+    }
+    var ret = data[0].x;
+    for(var i = 0; i < data.length-1; i++){
+        if(ret < data[i+1].x){
             ret = data[i+1].x;
         }
     }
@@ -371,10 +415,75 @@ function gettop(data){
     }
     return ret;
 }
-
+function getbottom(data){
+    if(data.length < 1){
+        return null;
+    }else if(data.length < 2){
+        return data[i];
+    }
+    var ret = data[0].y;
+    for(var i = 0; i < data.length-1; i++){
+        if(ret < data[i+1].y){
+            ret = data[i+1].y;
+        }
+    }
+    return ret;
+}
 function addLog(txt_log){
     document.getElementById("txt_log_id").innerHTML += '<a>' + txt_log + '</a><br>';
     var obj = document.getElementById("txt_log_id");
     if(!obj) return;
     obj.scrollTop = obj.scrollHeight;
+}
+
+/*
+var RegionData = [
+    {
+        name: "", //camera1, camera2, ・・・
+        region1: {
+            mapPoints: [],
+            camPoints: [],
+        },
+        region2: {
+            mapPoints: [],
+            camPoints: [],
+        },
+        region3: {
+            mapPoints: [],
+            camPoints: [],
+        },
+        finish: false,
+    }
+];
+RegionData[camNo].region1.mapPoints
+RegionData[camNo].region1.camPoints
+*/
+function hitPolygon(canvas, x, y){
+    var left;
+    var right;
+    var top;
+    var bottom;
+    if(canvas.lowerCanvasEl.id == "canvas1"){ //map
+        left = getleft(RegionData[camNo].region1.mapPoints);
+        right = getright(RegionData[camNo].region1.mapPoints);
+        top = gettop(RegionData[camNo].region1.mapPoints);
+        bottom = getbottom(RegionData[camNo].region1.mapPoints);
+        if(isHit(left, right,top,bottom,x,y)){
+            return 1;
+        }
+    }else if(canvas.lowerCanvasEl.id == "canvas2"){ //cam
+
+    }
+}
+function isHit(pos_x1, pos_x2, pos_y1, pos_y2, x, y){
+    if(pos_x1 <= x && x <= pos_x2){
+        if(pos_y1 <= y && y <= pos_y2){
+            var log = "Hit:" + String(pos_x1) + "<=" + String(x) + "<" + String(pos_x2) + ", " + String(pos_y1) + "<=" + String(y) + "<" + String(pos_y2);
+            addLog(log);
+            return true;
+        }
+    }
+    var log = "noHit:" + String(pos_x1) + "<=" + String(x) + "<" + String(pos_x2) + ", " + String(pos_y1) + "<=" + String(y) + "<" + String(pos_y2);
+    addLog(log);
+    return false;
 }
