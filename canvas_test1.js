@@ -44,27 +44,25 @@ var camPoints = [
     }
 }
 */
+
 var RegionData = [
     {
-        name: "", //camera1, camera2, ・・・
-        region1: {
-            mapPoints: [],
-            camPoints: [],
-        },
-        region2: {
-            mapPoints: [],
-            camPoints: [],
-        },
-        region3: {
-            mapPoints: [],
-            camPoints: [],
-        },
+        name: "camera0", //camera1, camera2, ・・・
+        region: /*region1, region2, ・・・*/ [
+            {
+                name     : "",
+                mapPoints: [],
+                camPoints: [],
+            }
+        ],
         focusRegionNo: 1,
         finish: false,
     }
 ];
 var cameraNo = 0;
-var regionNo = 0;
+var lMapRegionNo = 0;
+var lCamRegionNo = 0;
+
 //json保存を作成する機能を作ったら  ai-posingへ移植する
 
 
@@ -93,7 +91,8 @@ window.onload=function(){
 
     document.getElementById("init_button_id").onclick = function(e) {
         // Initialize
-        regionNo = 1;
+        lMapRegionNo = 0;
+        lCamRegionNo = 0;
         RegionData.length = 0;
         mapPoints.length = 0;
         camPoints.length = 0;
@@ -127,11 +126,13 @@ window.onload=function(){
     
     document.getElementById("set_polygon_button_id").onclick = function(e) {
         // set polygon data for n region.
-        drawPolygon(canvas1, mapPoints);
+        drawPolygon(canvas1, mapPoints, lMapRegionNo);
+        lMapRegionNo++;
         mapPoints.length = 0;
-        drawPolygon(canvas2, camPoints);
+
+        drawPolygon(canvas2, camPoints, lCamRegionNo);
+        lCamRegionNo++;
         camPoints.length = 0;
-        regionNo++;
     };
 
     document.getElementById("json_button_id").onclick = function(e) {
@@ -142,7 +143,8 @@ window.onload=function(){
         addLog(data2);
         finishRegionData(cameraNo); // finish the regiondata of cameraXX.
         saveJsonData("camera00.json");
-        regionNo = 0;
+        lMapRegionNo = 0;
+        lCamRegionNo = 0;
     };
     /*
     document.getElementById("clear_button_id").onclick = function(e) {
@@ -232,7 +234,7 @@ function drawCircle(canvas, targetPoints, offsetX, offsetY){
     }
 }
 
-function drawPolygon(canvas, targetPoints){
+function drawPolygon(canvas, targetPoints, regionNo){
     var data = [];
     var normData = [];
     data.length = 0;
@@ -284,43 +286,38 @@ function addPolygon(canvas, data, left, top){
 }
 
 
-function setRegionData(camNo, name){
+function setRegionData(camNo, name, regionNo){
     var data =     {
         name: name, 
-        region1: {
-            mapPoints: [],
-            camPoints: [],
-        },
-        region2: {
-            mapPoints: [],
-            camPoints: [],
-        },
-        region3: {
-            mapPoints: [],
-            camPoints: [],
-        },
+        region: [
+            {
+                name     : "region" + String(regionNo),
+                mapPoints: [],
+                camPoints: [],
+            }
+        ],
         focusRegionNo:1,
         finish: false,
     };
     RegionData.push(data);
 }
 function addRegionData(camNo, canvas, data, regionNo){
+    if(RegionData[camNo].region.length <= regionNo){
+        var region = {
+            name     : "region" + String(regionNo),
+            mapPoints: [],
+            camPoints: [],
+        };
+        RegionData[camNo].region.push(region);
+    }
     if(canvas.lowerCanvasEl.id == "canvas1"){ //map
-        if(regionNo == 1){
-            RegionData[camNo].region1.mapPoints.push(data);
-        }else if(regionNo == 2){
-            RegionData[camNo].region2.mapPoints.push(data);
-        }else if(regionNo == 3){
-            RegionData[camNo].region3.mapPoints.push(data);
+        for(var i = 0; i < data.length; i++){
+            RegionData[camNo].region[regionNo].mapPoints.push(data[i]);
         }
     }else if(canvas.lowerCanvasEl.id == "canvas2"){ //cam
-        if(regionNo == 1){
-            RegionData[camNo].region1.camPoints.push(data);
-        }else if(regionNo == 2){
-            RegionData[camNo].region2.camPoints.push(data);
-        }else if(regionNo == 3){
-            RegionData[camNo].region3.camPoints.push(data);
-        }   
+        for(var i = 0; i < data.length; i++){
+            RegionData[camNo].region[regionNo].camPoints.push(data[i]);
+        }
     }
 }
 function finishRegionData(camNo){
@@ -459,17 +456,12 @@ RegionData[camNo].region1.mapPoints
 RegionData[camNo].region1.camPoints
 */
 function hitPolygon(canvas, x, y){
-    var left;
-    var right;
-    var top;
-    var bottom;
+    var left = 0;
+    var right = 0;
+    var top = 0;
+    var bottom = 0;
     if(canvas.lowerCanvasEl.id == "canvas1"){ //map
-        left = getleft(RegionData[camNo].region1.mapPoints);
-        right = getright(RegionData[camNo].region1.mapPoints);
-        top = gettop(RegionData[camNo].region1.mapPoints);
-        bottom = getbottom(RegionData[camNo].region1.mapPoints);
         if(isHit(left, right,top,bottom,x,y)){
-            return 1;
         }
     }else if(canvas.lowerCanvasEl.id == "canvas2"){ //cam
 
