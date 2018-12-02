@@ -259,8 +259,12 @@ function drawPolygon(canvas, targetPoints, regionNo){
     var left = getleft(data);
     var top = gettop(data);
     var polygon = null;
+    var text = null;
+    var center = {x:0,y:0};
     if(left != null && top != null){
         polygon = addPolygon(canvas, data, left, top);
+        center = getcenter(data);
+        text = addText(String(regionNo), canvas, center.x, center.y, 20, 'red');
     }
     addRegionData(canvas, polygon, targetPoints, regionNo);
 }
@@ -337,9 +341,9 @@ function removeCircle(canvas, circle){
 }
 function setCircleAxis(canvas, left, top, radius){
     sPoints = "[" + String(left+radius) + "," + String(top+radius) + "]";
-    return addAxisText(sPoints, canvas, left+radius*2, top+radius*2, 10, 'black');
+    return addText(sPoints, canvas, left+radius*2, top+radius*2, 10, 'black');
 }
-function addAxisText(sInput, canvas, left, top, font_size, color){
+function addText(sInput, canvas, left, top, font_size, color){
     var text = new fabric.Text(sInput, {
         left: left,
         top: top,
@@ -459,6 +463,19 @@ function getbottom(data){
         }
     }
     return ret;
+}
+function getcenter(data){
+    if(data.length < 1){
+        return null;
+    }
+    ret = {x:0,y:0};
+    for(var i = 0; i < data.length; i++){
+        ret.x = ret.x + data[i].x;
+        ret.y = ret.y + data[i].y;
+    }
+    ret.x = ret.x / data.length;
+    ret.y = ret.y / data.length;
+    return ret;    
 }
 function addLog(txt_log){
     document.getElementById("txt_log_id").innerHTML += '<a>' + txt_log + '</a><br>';
