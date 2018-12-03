@@ -451,7 +451,16 @@ function tranceCamDataToOutputData(data){
             }
             region.camNormPoints.push(norm_point);
         }
-       
+        /*
+        for(k = 0; k < region.mapNormPoints.length; k++){
+            region.mapNormPoints[k].x =  region.mapNormPoints[k].x / lBgImgSize.map.width; //normalize
+            region.mapNormPoints[k].y =  region.mapNormPoints[k].y / lBgImgSize.map.height; //normalize
+        }
+        for(k = 0; k < region.camNormPoints.length; k++){
+            region.camNormPoints[k].x =  region.camNormPoints[k].x / lBgImgSize.cam.width; //normalize
+            region.camNormPoints[k].y =  region.camNormPoints[k].y / lBgImgSize.cam.height; //normalize
+        }
+        */        
         lOutputData.region.push(region);
     }
     lOutputData.name = data.name;
