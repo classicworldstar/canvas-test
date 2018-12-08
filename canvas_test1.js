@@ -28,6 +28,7 @@ var lCameraData = {
         {
             name     : "", /* "region1", "region2", ・・・*/
             index    : 0,
+            enable   : false, //valid,invalid 有効、無効
             mapPolygon: null,
             mapPoints: [], //mapPoints data
             camPolygon: null,
@@ -40,11 +41,20 @@ var lCameraData = {
 
 var lOutputData = {
     name: "camera0", //camera1, camera2, ・・・
+    mapFileName: "",
+    mapWidth: "",
+    mapHeight: "",
+    camFileName: "",
+    camWidth: "",
+    camHeight: "",
     region: /*region1, region2, ・・・*/ [
         {
             name     : "", /* "region1", "region2", ・・・*/
+            enable   : true,
             mapPoints: [], //only axis data from mapPoints
+            mapNormPoints: [],
             camPoints: [], //only axis data from mapPoints
+            camNormPoints: []
         }
     ],
 };
@@ -81,10 +91,14 @@ window.onload=function(){
     initialize();
     document.getElementById("init_button_id").onclick = function(e) {
         // Initialize
-        window.location.reload(true);
+        //window.location.reload(true);
         initialize();
+        initCanvas();
+        setRegionData(lCameraNo);
+        setPointsData(lMapPoints, lMapRegionNo);
+        setPointsData(lCamPoints, lCamRegionNo);
     };
-    /*
+
     document.getElementById("drawmode_button_id").onclick = function(e) {
         // draw mode on <-> off
 
@@ -98,14 +112,14 @@ window.onload=function(){
             canvas2.isDrawingMode = true;
         }
     };
-    */
+
     document.getElementById("set_polygon_button_id").onclick = function(e) {
         // set polygon data for n region.
-        drawPolygon(canvas1, lMapPoints, lMapRegionNo);
+        drawPolygon(canvas1, lMapPoints, lMapRegionNo, 'blue');
         lMapRegionNo++;
         clearPoints(lMapPoints, lMapRegionNo);
 
-        drawPolygon(canvas2, lCamPoints, lCamRegionNo);
+        drawPolygon(canvas2, lCamPoints, lCamRegionNo, 'blue');
         lCamRegionNo++;
         clearPoints(lCamPoints, lCamRegionNo);
 
@@ -113,17 +127,60 @@ window.onload=function(){
 
     document.getElementById("json_button_id").onclick = function(e) {
         // ここに#buttonをクリックしたら発生させる処理を記述する
-        //data1 = JSON.stringify(canvas1);
-        //data2 = JSON.stringify(canvas2);
-        //addLog(data1);
-        //addLog(data2);
         finishRegionData(lCameraNo); // finish the regiondata of cameraXX.
         saveCameraData("camera_data.json");
         saveOutputData("output_data.json");
-
-        //lMapRegionNo = 0;
-        //lCamRegionNo = 0;
     };
+
+    //Form要素を取得する
+    var form = document.forms.myform;
+    //ファイルが読み込まれた時の処理
+    form.myfile.addEventListener('change', function(e) {
+        
+        initialize();
+
+        //ここにファイル取得処理を書く
+        var result = e.target.files[0];
+
+        //FileReaderのインスタンスを作成する
+        var reader = new FileReader();
+
+        //読み込んだファイルの中身を取得する
+        reader.readAsText( result );
+
+        //ファイルの中身を取得後に処理を行う
+        reader.addEventListener( 'load', function() {
+            addLog(reader.result);   
+            var data =  JSON.parse(reader.result); 
+            setRegionData(lCameraNo);
+            for(var i = 0; i < data.region.length; i++){
+                //lCameraData.region.push(data.region[i]);
+                //lCameraData.region[i].name = data.region[i].name;
+                for(var k = 0; k < data.region[i].mapPoints.length; k++){
+                    if(data.region[i].enable){
+                        drawPoint(canvas1, lMapPoints, data.region[i].mapPoints[k].x, data.region[i].mapPoints[k].y, 'blue');
+                    }else{
+                        drawPoint(canvas1, lMapPoints, data.region[i].mapPoints[k].x, data.region[i].mapPoints[k].y,'red');    
+                    }
+                }
+                if(data.region[i].enable){
+                    drawPolygon(canvas1, lMapPoints, lMapRegionNo,'blue');
+                }else{
+                    drawPolygon(canvas1, lMapPoints, lMapRegionNo,'red');
+                }
+                lMapRegionNo++;
+                clearPoints(lMapPoints, lMapRegionNo);
+
+                for(var k = 0; k < data.region[i].camPoints.length; k++){
+                    drawPoint(canvas2, lCamPoints, data.region[i].camPoints[k].x, data.region[i].camPoints[k].y,'blue');
+                }
+                drawPolygon(canvas2, lCamPoints, lCamRegionNo, 'blue');
+                lCamRegionNo++;
+                clearPoints(lCamPoints, lCamRegionNo);                
+            }
+            finishRegionData();
+        });        
+    });
     /*
     document.getElementById("clear_button_id").onclick = function(e) {
         // ここに#buttonをクリックしたら発生させる処理を記述する
@@ -140,9 +197,9 @@ window.onload=function(){
         //canvas1,map
         if(canvas1.isDrawingMode){
             //set clicked point, draw circle.
-            drawPoint(canvas1, lMapPoints, e.offsetX, e.offsetY);
+            drawPoint(canvas1, lMapPoints, e.offsetX, e.offsetY, 'red');
         }else{
-            //move point, drug and drop
+            //region enable true or false
             selectRegion(lCameraNo, canvas1, lMapPoints, e.offsetX, e.offsetY);
         }
         addLog("img_map_img_id,mousedown");
@@ -154,10 +211,10 @@ window.onload=function(){
         //canvas2,camera
         if(canvas2.isDrawingMode){
             //set clicked point, draw circle.
-            drawPoint(canvas2, lCamPoints, e.offsetX, e.offsetY);
+            drawPoint(canvas2, lCamPoints, e.offsetX, e.offsetY, 'red');
         }else{
-            //move point, drug and drop
-            selectRegion(lCameraNo, canvas2, lCamPoints, e.offsetX, e.offsetY);
+            //region enable true or false
+           // selectRegion(lCameraNo, canvas2, lCamPoints, e.offsetX, e.offsetY);
         }        
         addLog("img_map_img_id,mousedown");
     });
@@ -209,32 +266,32 @@ function initialize(){
     lOutputData.region.length = 0;
     lMapPoints.points.length = 0;
     lCamPoints.points.length = 0;
-    lMapFileName = "";
-    lCamFileName = "";
+    lMapFileName = "top.jpg";
+    lCamFileName = "cam0.jpg";
+    document.getElementById("drawmode_button_id").disabled = "";
+}
+
+function initCanvas(){
     if(canvas1 == null){
-        //canvas1 = new fabric.Canvas('canvas1');
-        //canvas1.isDrawingMode = true;
-        //drawImage(canvas1, lMapFileName);
+        canvas1 = new fabric.Canvas('canvas1');
+        canvas1.isDrawingMode = true;
+        drawImage(canvas1, lRelativePath+lMapFileName);
     }else{
         canvas1.clear().renderAll();
-        //if(lMapFileName != ""){
-        //    drawImage(canvas1, lMapFileName);
-        //}
+        if(lMapFileName != ""){
+            drawImage(canvas1, lRelativePath+lMapFileName);
+        }
     }
     if(canvas2 == null){
-        //canvas2 = new fabric.Canvas('canvas2');
-        //canvas2.isDrawingMode = true;
-        //drawImage(canvas2, lCamFileName);
+        canvas2 = new fabric.Canvas('canvas2');
+        canvas2.isDrawingMode = true;
+        drawImage(canvas2, lRelativePath+lCamFileName);
     }else{
         canvas2.clear().renderAll();
-        //if(lCamFileName != ""){
-        //    drawImage(canvas2, lCamFileName);
-        //}
-    }
-//        document.getElementById("drawmode_button_id").disabled = "";
-    setRegionData(lCameraNo);
-    setPointsData(lMapPoints, lMapRegionNo);
-    setPointsData(lCamPoints, lCamRegionNo);
+        if(lCamFileName != ""){
+            drawImage(canvas2, lRelativePath+lCamFileName);
+        }
+    }    
 }
 
 function drawImage(canvas, fileName){
@@ -264,12 +321,10 @@ function setPointsData(targetPoints, regionNo){
     targetPoints.name = "region" + String(regionNo); //"region1", "region2",・・・・
     targetPoints.index = regionNo;
 }
-function drawPoint(canvas, targetPoints, offsetX, offsetY){
+function drawPoint(canvas, targetPoints, offsetX, offsetY, color){
     if(canvas.isDrawingMode == true){
-        var circle = addCircle(canvas,offsetX-5,offsetY-5,5, 'red');
+        var circle = addCircle(canvas,offsetX-5,offsetY-5,5, color);
         var text = setCircleAxis(canvas,offsetX-5,offsetY-5,5);
-        var x = circle.left;
-        var y = circle.top;
 
         var Points = {  
             circle  : circle,
@@ -286,11 +341,11 @@ function clearPoints(points, regionNo){
     points.points.length = 0;
 }
 
-function drawPolygon(canvas, targetPoints, regionNo){
+function drawPolygon(canvas, targetPoints, regionNo, color){
     var data = [];
     var normData = [];
     for(var i = 0; i < targetPoints.points.length; i++){
-        var circle = addCircle(canvas,targetPoints.points[i].circle.left,targetPoints.points[i].circle.top, 5,'blue');
+        var circle = addCircle(canvas,targetPoints.points[i].circle.left,targetPoints.points[i].circle.top, 5, color);
         canvas.remove(targetPoints.points[i].circle);
         targetPoints.points[i].circle = circle;
         var points = {
@@ -313,6 +368,7 @@ function drawPolygon(canvas, targetPoints, regionNo){
         polygon = addPolygon(canvas, data, left, top);
         center = getcenter(data);
         text = addText(String(regionNo), canvas, center.x, center.y, 20, 'red');
+        targetPoints.points.text = text;
     }
     addRegionData(canvas, polygon, targetPoints, regionNo);
 }
@@ -345,6 +401,7 @@ function addRegionData(canvas, polygon, data, regionNo){
     if(lCameraData.region.length <= regionNo){
         var region = {
             name     : "region" + String(regionNo),
+            enable   : true,
             mapPolygon: null,
             mapPoints: [],
             camPolygon: null,
@@ -428,13 +485,23 @@ function saveJsonData(fileName, data){
 }
 function tranceCamDataToOutputData(data){
     lOutputData.name = "camera"+String(lCameraNo);
+    lOutputData.mapFileName = lMapFileName;
+    lOutputData.mapWidth = lBgImgSize.map.naturalWidth;
+    lOutputData.mapHeight = lBgImgSize.map.naturalHeight;
+    lOutputData.camFileName = lCamFileName;
+    lOutputData.camWidth = lBgImgSize.cam.naturalWidth;
+    lOutputData.camHeight = lBgImgSize.cam.naturalHeight;
     for(var i = 0; i < data.region.length; i++){
         var region = {
             name:"",
+            enable: false,
+            mapPoints: [],
             mapNormPoints:[],
+            camPoints: [],
             camNormPoints:[]
         };
         region.name = data.region[i].name;
+        region.enable = data.region[i].enable;
         region.mapNormPoints.length = 0;
         region.camNormPoints.length = 0;
         for(k = 0; k < data.region[i].mapPolygon.points.length; k++){
@@ -442,6 +509,7 @@ function tranceCamDataToOutputData(data){
                 x: data.region[i].mapPolygon.points[k].x / lBgImgSize.map.width, //normalize
                 y: data.region[i].mapPolygon.points[k].y / lBgImgSize.map.height //normalize
             };
+            region.mapPoints.push(data.region[i].mapPolygon.points[k]);
             region.mapNormPoints.push(norm_point);
         }
         for(k = 0; k < data.region[i].camPolygon.points.length; k++){
@@ -449,6 +517,7 @@ function tranceCamDataToOutputData(data){
                 x: data.region[i].camPolygon.points[k].x / lBgImgSize.cam.width, //normalize
                 y: data.region[i].camPolygon.points[k].y / lBgImgSize.cam.height //normalize
             }
+            region.camPoints.push(data.region[i].camPolygon.points[k]);
             region.camNormPoints.push(norm_point);
         }
        
@@ -533,19 +602,49 @@ function addLog(txt_log){
     obj.scrollTop = obj.scrollHeight;
 }
 
-function selectRegion(camenra_no, canvas, points, x, y){
-    if(hitRegion(camenra_no, canvas, points, x, y)){
+
+function selectRegion(camenra_no, canvas, targetPoints, x, y){
+    retParam = hitRegion(camenra_no, canvas, x, y); 
+    if(retParam.enable){
         addLog("hitRegion");
-        for(var i = 0; i < points.points.length; i++){
-            var left = points.points[i].circle.left;
-            var top = points.points[i].circle.top;
-            var radius = points.points[i].circle.radius;
-            canvas.remove(points.points[i].circle);
-            points.points[i].circle = addCircle(canvas, left, top, radius, 'red');
+
+        for(var i = 0; i < retParam.points.length; i++){
+            /*
+            var left = retParam.points[i].circle.left;
+            var top = retParam.points[i].circle.top;
+            var radius = retParam.points[i].circle.radius;
+            */
+           var left = retParam.points[i].x;
+           var top = retParam.points[i].y;
+           var radius = 5;
+
+            //canvas.remove(targetPoints.points[i].circle);
+            var circle = null
+            if(lCameraData.region[retParam.regionNo].enable){
+                circle = addCircle(canvas, left-radius, top-radius, radius, 'red');
+            }else{
+                circle = addCircle(canvas, left-radius, top-radius, radius, 'blue');    
+            }
+            if(circle){
+//                canvas.remove(retParam.points[i].circle); circleを共通のパラメータにしないと余計なcircleを残すことになる。今は修正できていない。
+//                targetPoints.points[i].circle = circle;        
+            }
+
+        }
+        if(lCameraData.region[retParam.regionNo].enable){
+            lCameraData.region[retParam.regionNo].enable = false;
+        }else{
+            lCameraData.region[retParam.regionNo].enable = true;
         }
     }
 }
-function hitRegion(camenra_no, canvas, points, x, y){
+
+function hitRegion(camenra_no, canvas, x, y){
+    var retParam = {
+        regionNo: 0,
+        enable: false,
+        points: [],
+    };
     var left = 0;
     var right = 0;
     var top = 0;
@@ -557,35 +656,24 @@ function hitRegion(camenra_no, canvas, points, x, y){
             top = gettop(lCameraData.region[i].mapPolygon.points);
             bottom = getbottom(lCameraData.region[i].mapPolygon.points);
             if(isHit(left, right,top,bottom,x,y)){
-                canvas.remove(lCameraData.region[i].mapPolygon);
-
-                setPointsData(points, i);
-                points.points.length = 0;
-                for(var n = 0; n < lCameraData.region[i].mapPoints.length; n++){
-                    points.points.push(lCameraData.region[i].mapPoints[n]);
-                }
-                return true;
+                retParam.regionNo = i;
+                retParam.enable = true;    
+                retParam.points = lCameraData.region[i].mapPolygon.points;                
             }
         }
     }else if(canvas.lowerCanvasEl.id == "canvas2"){ //cam
         for(var i = 0; i < lCameraData.region.length; i++){
-            left = getleft(lCameraData.region[i].mapPolygon.points);
-            right = getright(lCameraData.region[i].mapPolygon.points);
-            top = gettop(lCameraData.region[i].mapPolygon.points);
-            bottom = getbottom(lCameraData.region[i].mapPolygon.points);
+            left = getleft(lCameraData.region[i].camPolygon.points);
+            right = getright(lCameraData.region[i].camPolygon.points);
+            top = gettop(lCameraData.region[i].camPolygon.points);
+            bottom = getbottom(lCameraData.region[i].camPolygon.points);
             if(isHit(left, right,top,bottom,x,y)){
-                canvas.remove(lCameraData.region[i].camPolygon);
-
-                setPointsData(points, i);
-                points.points.length = 0;
-                for(var n = 0; n < lCameraData.region[i].camPoints.length; n++){
-                    points.points.push(lCameraData.region[i].camPoints[n]);
-                }                    
-                return true;
-            }
+                retParam.regionNo = i;
+                retParam.enable = true;                    
+                retParam.points = lCameraData.region[i].camPolygon.points;             }
         }   
     }
-    return false;
+    return retParam;
 }
 function isHit(pos_x1, pos_x2, pos_y1, pos_y2, x, y){
     if(pos_x1 <= x && x <= pos_x2){
