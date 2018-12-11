@@ -52,9 +52,9 @@ var lOutputData = {
             name     : "", /* "region1", "region2", ・・・*/
             enable   : true,
             mapPoints: [], //only axis data from mapPoints
-            mapNormPoints: [],
+            //mapNormPoints: [],
             camPoints: [], //only axis data from mapPoints
-            camNormPoints: []
+            //camNormPoints: []
         }
     ],
 };
@@ -97,6 +97,15 @@ window.onload=function(){
         setRegionData(lCameraNo);
         setPointsData(lMapPoints, lMapRegionNo);
         setPointsData(lCamPoints, lCamRegionNo);
+        form.myfile.value = "";
+        document.getElementById("region_name_text_id").value ="input region name";
+        document.getElementById("drawmode_button_id").value = "select off";
+        canvas1.isDrawingMode = true;
+        canvas2.isDrawingMode = true;
+    };
+
+    document.getElementById("region_name_text_id").onclick = function(e) {
+        document.getElementById("region_name_text_id").value ="";
     };
 
     document.getElementById("drawmode_button_id").onclick = function(e) {
@@ -115,10 +124,12 @@ window.onload=function(){
 
     document.getElementById("set_polygon_button_id").onclick = function(e) {
         // set polygon data for n region.
+        lMapPoints.name = document.getElementById("region_name_text_id").value;
         drawPolygon(canvas1, lMapPoints, lMapRegionNo, 'blue');
         lMapRegionNo++;
         clearPoints(lMapPoints, lMapRegionNo);
 
+        lCamPoints.name = document.getElementById("region_name_text_id").value;
         drawPolygon(canvas2, lCamPoints, lCamRegionNo, 'blue');
         lCamRegionNo++;
         clearPoints(lCamPoints, lCamRegionNo);
@@ -138,8 +149,14 @@ window.onload=function(){
     form.myfile.addEventListener('change', function(e) {
         
         initialize();
+        document.getElementById("drawmode_button_id").value = "select off";
+        canvas1.isDrawingMode = true;
+        canvas2.isDrawingMode = true;
 
         //ここにファイル取得処理を書く
+        if(e.target.files.length == 0){
+            return;
+        }
         var result = e.target.files[0];
 
         //FileReaderのインスタンスを作成する
@@ -156,6 +173,7 @@ window.onload=function(){
             for(var i = 0; i < data.region.length; i++){
                 //lCameraData.region.push(data.region[i]);
                 //lCameraData.region[i].name = data.region[i].name;
+                lMapPoints.name = data.region[i].name;
                 for(var k = 0; k < data.region[i].mapPoints.length; k++){
                     if(data.region[i].enable){
                         drawPoint(canvas1, lMapPoints, data.region[i].mapPoints[k].x, data.region[i].mapPoints[k].y, 'blue');
@@ -171,10 +189,21 @@ window.onload=function(){
                 lMapRegionNo++;
                 clearPoints(lMapPoints, lMapRegionNo);
 
+                lCamPoints.name = data.region[i].name;
                 for(var k = 0; k < data.region[i].camPoints.length; k++){
-                    drawPoint(canvas2, lCamPoints, data.region[i].camPoints[k].x, data.region[i].camPoints[k].y,'blue');
+                    if(data.region[i].enable){
+                        drawPoint(canvas2, lCamPoints, data.region[i].camPoints[k].x, data.region[i].camPoints[k].y, 'blue');
+                    }else{
+                        drawPoint(canvas2, lCamPoints, data.region[i].camPoints[k].x, data.region[i].camPoints[k].y,'red');    
+                    }
+//                    drawPoint(canvas2, lCamPoints, data.region[i].camPoints[k].x, data.region[i].camPoints[k].y,'blue');
                 }
-                drawPolygon(canvas2, lCamPoints, lCamRegionNo, 'blue');
+//                drawPolygon(canvas2, lCamPoints, lCamRegionNo, 'blue');
+                if(data.region[i].enable){
+                    drawPolygon(canvas2, lCamPoints, lCamRegionNo,'blue');
+                }else{
+                    drawPolygon(canvas2, lCamPoints, lCamRegionNo,'red');
+                }
                 lCamRegionNo++;
                 clearPoints(lCamPoints, lCamRegionNo);                
             }
@@ -193,6 +222,7 @@ window.onload=function(){
         canvas2.loadFromJSON(data2).renderAll();
     };
     */
+   
     document.getElementById("div_map_img_id").addEventListener("mousedown", function(e){        
         //canvas1,map
         if(canvas1.isDrawingMode){
@@ -400,7 +430,7 @@ function setRegionData(camNo){
 function addRegionData(canvas, polygon, data, regionNo){
     if(lCameraData.region.length <= regionNo){
         var region = {
-            name     : "region" + String(regionNo),
+            name     : data.name,
             enable   : true,
             mapPolygon: null,
             mapPoints: [],
@@ -496,21 +526,21 @@ function tranceCamDataToOutputData(data){
             name:"",
             enable: false,
             mapPoints: [],
-            mapNormPoints:[],
+            //mapNormPoints:[],
             camPoints: [],
-            camNormPoints:[]
+            //camNormPoints:[]
         };
         region.name = data.region[i].name;
         region.enable = data.region[i].enable;
-        region.mapNormPoints.length = 0;
-        region.camNormPoints.length = 0;
+        //region.mapNormPoints.length = 0;
+        //region.camNormPoints.length = 0;
         for(k = 0; k < data.region[i].mapPolygon.points.length; k++){
             var norm_point = {
                 x: data.region[i].mapPolygon.points[k].x / lBgImgSize.map.width, //normalize
                 y: data.region[i].mapPolygon.points[k].y / lBgImgSize.map.height //normalize
             };
             region.mapPoints.push(data.region[i].mapPolygon.points[k]);
-            region.mapNormPoints.push(norm_point);
+            //region.mapNormPoints.push(norm_point);
         }
         for(k = 0; k < data.region[i].camPolygon.points.length; k++){
             var norm_point = {
@@ -518,7 +548,7 @@ function tranceCamDataToOutputData(data){
                 y: data.region[i].camPolygon.points[k].y / lBgImgSize.cam.height //normalize
             }
             region.camPoints.push(data.region[i].camPolygon.points[k]);
-            region.camNormPoints.push(norm_point);
+            //region.camNormPoints.push(norm_point);
         }
        
         lOutputData.region.push(region);
