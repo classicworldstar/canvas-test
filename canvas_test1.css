@@ -28,6 +28,10 @@ div#div_cam_img_id{
     background-color: #E1F5A9;
     box-shadow: 1px 1px 2px;    
 }
+#clear_all_button_id {
+    background-color: #E1F5A9;
+    box-shadow: 1px 1px 2px;    
+}
 #restore_button_id {
     background-color: #E1F5A9;
     box-shadow: 1px 1px 2px;     
