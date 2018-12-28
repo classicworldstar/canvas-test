@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="utf-8">
-    <title>canvas-test1</title>    
+    <title>canvas-test1</title>
     <link href="canvas_test1.css" rel="stylesheet" type="text/css" media="all">
     <!--[if IE]>
     <script type="text/javascript" src="excanvas.js"></script>
     <![endif]-->
     <!--　 fabric.jsの読込み　-->
     <script type="text/javascript" src="./libs/fabric.js"></script>
-    <script src="canvas_test1.js"></script>    
+    <script src="canvas_test1.js"></script>
 </head>
 
 <body>
@@ -19,24 +20,37 @@
     <input type="text" id="file_name_text_id" name="example2" size="30" maxlength="30" value="output_data">
     <input type="button" id="json_button_id" class="button" value="save"><br>
     <form name="myform">
-        <input name="myfile", type="file">
+        <input name="myfile" , type="file">
     </form>
     <input type="button" id="clear_button_id" class="button" value="clear">
     <input type="button" id="clear_all_button_id" class="button" value="clear all">
     <input type="button" id="drawmode_button_id" class="button" value="select off" disabled>
 
-<!--
+    <!--
     <input type="button" id="clear_button_id" class="button" value="clear">
     <input type="button" id="restore_button_id" class="button" value="restore">
 -->
     <div id="div_map_img_id">
+        <!--
         <canvas id="canvas1" width="640" height="480" style="border:1px solid;"></canvas>
+-->
+        <canvas id="cvn_bg_map_id" width="640" height="480"></canvas>
+        <canvas id="cvn_top_map_id" width="640" height="480"></canvas>
     </div>
     <div id="div_cam_img_id">
+        <!--
         <canvas id="canvas2" width="640" height="480" style="border:1px solid;"></canvas>
+-->
+        <canvas id="cvn_bg_cam_id" width="640" height="480"></canvas>
+        <canvas id="cvn_top_cam_id" width="640" height="480"></canvas>
     </div>
-    
+    <!--
+    <div id="div_test_img_id">
+        <canvas id="canvas3" width="640" height="480" style="border:1px solid;"></canvas>
+    </div>
+-->
+
     <div type="text" id="txt_log_id" disabled="disabled"></div>
 </body>
-    
+
 </html>
