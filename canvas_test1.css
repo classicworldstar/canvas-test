@@ -1,9 +1,38 @@
+body {
+    display: grid;
+    margin: 0;
+    resize: both;
+    min-height: 100vh;
+    grid-template-rows: 100px 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        "area_cntrl1     area_cntrl2"
+        "area_map       area_cam  "
+}
 
+area_cntrl1 {
+    grid-area: area_cntrl1;
+}
+area_cntrl2 {
+    grid-area: area_cntrl2;
+}
+area_map {
+    grid-area: area_map;
+    border:1px solid black; 
+}
+area_cam {
+    grid-area: area_cam;
+    border:1px solid black; 
+}
+area_debug {
+    grid-area: area_debug;
+    border:1px solid black; 
+}
 div#div_map_img_id{
     position: relative;
     border :dashed 1px #7b9cc4;
-    width:640px;  
-    height:480px; 
+    width:1fr;  
+    height:1fr; 
 }
 div#div_map_img_id>*{
     position: absolute;
@@ -15,12 +44,11 @@ canvas#cvn_top_map_id{
     border:1px solid black; 
 }
 
-
 div#div_cam_img_id{
     position: relative;
     border:dashed 1px #7b9cc4;
-    width:640px;  
-    height:480px; 
+    width:1fr;  
+    height:1fr; 
 }
 div#div_cam_img_id>*{
     position: absolute;
@@ -31,34 +59,6 @@ canvas#cvn_bg_cam_id{
 canvas#cvn_top_cam_id{
     border:1px solid black; 
 }
-
-#dropzone {
-	background-color: #cfc;
-	border: solid 3px #9c9;
-	color: #9c9;
-	min-height: 50px;
-	padding: 20px;
-	text-shadow: 1px 1px 0 #fff;
-}
-#dropzone.dropover {
-	background-color: #cff;
-	color: #9cc;
-}
-
-#files:empty::before {
-	color: #ccc;
-	content: "(Files data will be shown here.)";
-}
-#files img {
-	border: solid 1px #ccc;
-	cursor: pointer;
-	height: auto;
-	margin: 0 10px;
-	max-height: 128px;
-	max-width: 128px;
-	width: auto;
-}
-
 
 #init_button_id {
     background-color: #E1F5A9;
@@ -96,7 +96,7 @@ canvas#cvn_top_cam_id{
 div#txt_log_id{
     font-size: 10px; 
     width:1fr;  
-    height:120px; 
+    height:1fr; 
     border:1px solid black; 
     overflow:auto 
 }

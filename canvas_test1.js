@@ -96,6 +96,7 @@ window.onload = function () {
     initialize();
     initFileName();
     initCanvas();
+    document.getElementById("camera_name_text_id").value = "input camera name";
     document.getElementById("region_name_text_id").value = "input region name";
     document.getElementById("file_name_text_id").value = "output_data";
     /*   
@@ -150,6 +151,10 @@ window.onload = function () {
         form.myfile.value = ""; //json file name, select button
     };
 
+    document.getElementById("camera_name_text_id").onclick = function (e) {
+        document.getElementById("camera_name_text_id").value = "";
+    };
+
     document.getElementById("region_name_text_id").onclick = function (e) {
         document.getElementById("region_name_text_id").value = "";
     };
@@ -173,6 +178,7 @@ window.onload = function () {
         if (lMapPoints.points.length == lCamPoints.points.length) {
             if (lMapPoints.points.length > 1 && lCamPoints.points.length > 1) {
                 // Map and Camera, number of circle point is same.
+                lCameraData.name = document.getElementById("camera_name_text_id").value;
                 lMapPoints.name = document.getElementById("region_name_text_id").value;
                 lMapPoints.index = lMapRegionNo;
                 drawPolygon(canvas_map_top, lMapPoints, lMapRegionNo, 'blue');
@@ -242,8 +248,10 @@ window.onload = function () {
 
         //ファイルの中身を取得後に処理を行う
         reader.addEventListener('load', function () {
-            addLog(reader.result);
+            console.log(reader.result);
             var data = JSON.parse(reader.result);
+            setRegionData(0, data.name);
+            document.getElementById("camera_name_text_id").value = data.name;
             for (var i = 0; i < data.region.length; i++) {
                 //lCameraData.region.push(data.region[i]);
                 //lCameraData.region[i].name = data.region[i].name;
@@ -284,18 +292,6 @@ window.onload = function () {
             finishRegionData();
         });
     });
-    /*
-    document.getElementById("clear_button_id").onclick = function(e) {
-        // ここに#buttonをクリックしたら発生させる処理を記述する
-        canvas_map_top.clear().renderAll();
-        canvas_cam_top.clear().renderAll();
-    };
-    document.getElementById("restore_button_id").onclick = function(e) {
-        // ここに#buttonをクリックしたら発生させる処理を記述する
-        canvas_map_top.loadFromJSON(data1).renderAll();
-        canvas_cam_top.loadFromJSON(data2).renderAll();
-    };
-    */
 
     document.getElementById("div_map_img_id").addEventListener("mousedown", function (e) {
         //canvas_map_top,map
@@ -306,10 +302,10 @@ window.onload = function () {
             //region enable true or false
             selectRegion(lCameraNo, canvas_map_top, lMapPoints, e.offsetX, e.offsetY);
         }
-        addLog("img_map_img_id,mousedown");
+        console.log("img_map_img_id,mousedown");
     });
     document.getElementById("div_map_img_id").addEventListener("mouseup", function (e) {
-        addLog("img_map_img_id,mouseup");
+        console.log("img_map_img_id,mouseup");
     });
     document.getElementById("div_cam_img_id").addEventListener("mousedown", function (e) {
         //canvas_cam_top,camera
@@ -320,10 +316,10 @@ window.onload = function () {
             //region enable true or false
             // selectRegion(lCameraNo, canvas_cam_top, lCamPoints, e.offsetX, e.offsetY);
         }
-        addLog("img_map_img_id,mousedown");
+        console.log("img_map_img_id,mousedown");
     });
     document.getElementById("div_cam_img_id").addEventListener("mouseup", function (e) {
-        addLog("img_cam_img_id,mouseup");
+        console.log("img_cam_img_id,mouseup");
     });
 
     //背景Img表示
@@ -362,7 +358,6 @@ window.onload = function () {
         var reader = new FileReader();
         reader.onload = function (event) {
             image.src = event.target.result;
-
             canvas_map_top = new fabric.Canvas('cvn_top_map_id', {
                 isDrawingMode: true,
                 backgroundColor: 'rgba(250,250,250,0)',
@@ -411,7 +406,7 @@ function initialize() {
     lMapPoints.points.length = 0;
     lCamPoints.points.length = 0;
     document.getElementById("drawmode_button_id").disabled = "";
-    setRegionData(lCameraNo);
+    setRegionData(lCameraNo, "");
     setPointsData(lMapPoints, lMapRegionNo);
     setPointsData(lCamPoints, lCamRegionNo);
 }
@@ -427,52 +422,6 @@ function initCanvas() {
         canvas_cam_top.clear().renderAll();
     }
 }
-/*
-function setSelectedBgImg() {
-    if (canvas_map_top == null) {
-        canvas_map_top = new fabric.Canvas('cvn_top_map_id');
-        canvas_map_top.isDrawingMode = true;
-        drawImage(canvas_map_top, lRelativePath + lMapFileName);
-    } else {
-        if (lMapFileName != "") {
-            drawImage(canvas_map_top, lRelativePath + lMapFileName);
-        }
-    }
-    if (canvas_cam_top == null) {
-        canvas_cam_top = new fabric.Canvas('cvn_top_cam_id');
-        canvas_cam_top.isDrawingMode = true;
-        drawImage(canvas_cam_top, lRelativePath + lCamFileName);
-    } else {
-        if (lCamFileName != "") {
-            drawImage(canvas_cam_top, lRelativePath + lCamFileName);
-        }
-    }
-}
-
-function drawImage(canvas, file) {
-    var img = new Image();
-    img.src = file;//+'?' + new Date().getTime();
-    // 画像が読み込まれるのを待ってから処理を続行
-    img.onload = function () {
-
-        canvas.setBackgroundImage(file, canvas.renderAll.bind(canvas), {
-            backgroundImageOpacity: 0.5,
-            backgroundImageStretch: false,
-        });
-        if (canvas.lowerCanvasEl.id == "cvn_top_map_id") {
-            lBgImgSize.map.width = img.width;
-            lBgImgSize.map.height = img.height;
-            lBgImgSize.map.naturalWidth = img.naturalWidth;
-            lBgImgSize.map.naturalHeight = img.naturalHeight;
-        } else if (canvas.lowerCanvasEl.id == "cvn_top_cam_id") {
-            lBgImgSize.cam.width = img.width;
-            lBgImgSize.cam.height = img.height;
-            lBgImgSize.cam.naturalWidth = img.naturalWidth;
-            lBgImgSize.cam.naturalHeight = img.naturalHeight;
-        }
-    }
-}
-*/
 
 function setImgSize(canvas, img) {
     if (canvas.id == "cvn_bg_map_id") {
@@ -561,8 +510,8 @@ function addPolygon(canvas, data, left, top) {
 }
 
 
-function setRegionData(camNo) {
-    lCameraData.name = "camera" + String(camNo);
+function setRegionData(camNo, camName) {
+    lCameraData.name = camName;
     lCameraData.index = camNo;
     lCameraData.focusRegionNo = 0;
     lCameraData.finish = false;
@@ -656,7 +605,7 @@ function saveJsonData(fileName, data) {
     URL.revokeObjectURL(url);
 }
 function tranceCamDataToOutputData(data) {
-    lOutputData.name = "camera" + String(lCameraNo);
+    lOutputData.name = data.name;//"camera" + String(lCameraNo);
     lOutputData.mapFileName = lMapFileName;
     lOutputData.mapWidth = lBgImgSize.map.naturalWidth;
     lOutputData.mapHeight = lBgImgSize.map.naturalHeight;
@@ -769,18 +718,12 @@ function getcenter(data) {
     ret.y = ret.y / data.length;
     return ret;
 }
-function addLog(txt_log) {
-    document.getElementById("txt_log_id").innerHTML += '<a>' + txt_log + '</a><br>';
-    var obj = document.getElementById("txt_log_id");
-    if (!obj) return;
-    obj.scrollTop = obj.scrollHeight;
-}
 
 
 function selectRegion(camenra_no, canvas, targetPoints, x, y) {
     retParam = hitRegion(camenra_no, canvas, x, y);
     if (retParam.enable) {
-        addLog("hitRegion");
+        console.log("hitRegion");
 
         for (var i = 0; i < retParam.points.length; i++) {
             /*
@@ -854,11 +797,11 @@ function isHit(pos_x1, pos_x2, pos_y1, pos_y2, x, y) {
     if (pos_x1 <= x && x <= pos_x2) {
         if (pos_y1 <= y && y <= pos_y2) {
             var log = "Hit:" + String(pos_x1) + "<=" + String(x) + "<" + String(pos_x2) + ", " + String(pos_y1) + "<=" + String(y) + "<" + String(pos_y2);
-            addLog(log);
+            console.log(log);
             return true;
         }
     }
     var log = "noHit:" + String(pos_x1) + "<=" + String(x) + "<" + String(pos_x2) + ", " + String(pos_y1) + "<=" + String(y) + "<" + String(pos_y2);
-    addLog(log);
+    console.log(log);
     return false;
 }

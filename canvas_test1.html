@@ -14,43 +14,39 @@
 </head>
 
 <body>
-    <input type="button" id="init_button_id" class="button" value="init"><br>
-    <input type="text" id="region_name_text_id" name="example2" size="30" maxlength="30" value="input region name">
-    <input type="button" id="set_polygon_button_id" class="button" value="set region"><br>
-    <input type="text" id="file_name_text_id" name="example2" size="30" maxlength="30" value="output_data">
-    <input type="button" id="json_button_id" class="button" value="save"><br>
-    <form name="myform">
-        <input name="myfile" , type="file">
-    </form>
-    <input type="button" id="clear_button_id" class="button" value="clear">
-    <input type="button" id="clear_all_button_id" class="button" value="clear all">
-    <input type="button" id="drawmode_button_id" class="button" value="select off" disabled>
-
+    <area_cntrl1>
+        <input type="button" id="init_button_id" class="button" value="init"><br>
+        <input type="text" id="camera_name_text_id" name="example1" size="30" maxlength="30" value="input camera name"><br>
+        <input type="text" id="region_name_text_id" name="example2" size="30" maxlength="30" value="input region name">
+        <input type="button" id="set_polygon_button_id" class="button" value="set region"><br>
+        <input type="button" id="clear_button_id" class="button" value="clear">
+        <input type="button" id="clear_all_button_id" class="button" value="clear all">
+        <input type="button" id="drawmode_button_id" class="button" value="select off" disabled>
+    </area_cntrl1>
+    <area_cntrl2>
+        <input type="text" id="file_name_text_id" name="example2" size="30" maxlength="30" value="output_data">
+        <input type="button" id="json_button_id" class="button" value="save"><br>
+        <form name="myform">
+            <input name="myfile" , type="file">
+        </form>
+    </area_cntrl2>
+    <area_map>
+        <div id="div_map_img_id">
+            <canvas id="cvn_bg_map_id" width="640" height="480"></canvas>
+            <canvas id="cvn_top_map_id" width="640" height="480"></canvas>
+        </div>
+    </area_map>
+    <area_cam>
+        <div id="div_cam_img_id">
+            <canvas id="cvn_bg_cam_id" width="640" height="480"></canvas>
+            <canvas id="cvn_top_cam_id" width="640" height="480"></canvas>
+        </div>
+    </area_cam>
     <!--
-    <input type="button" id="clear_button_id" class="button" value="clear">
-    <input type="button" id="restore_button_id" class="button" value="restore">
+    <area_debug>
+        <div type="text" id="txt_log_id" disabled="disabled"></div>
+    </area_debug>
 -->
-    <div id="div_map_img_id">
-        <!--
-        <canvas id="canvas1" width="640" height="480" style="border:1px solid;"></canvas>
--->
-        <canvas id="cvn_bg_map_id" width="640" height="480"></canvas>
-        <canvas id="cvn_top_map_id" width="640" height="480"></canvas>
-    </div>
-    <div id="div_cam_img_id">
-        <!--
-        <canvas id="canvas2" width="640" height="480" style="border:1px solid;"></canvas>
--->
-        <canvas id="cvn_bg_cam_id" width="640" height="480"></canvas>
-        <canvas id="cvn_top_cam_id" width="640" height="480"></canvas>
-    </div>
-    <!--
-    <div id="div_test_img_id">
-        <canvas id="canvas3" width="640" height="480" style="border:1px solid;"></canvas>
-    </div>
--->
-
-    <div type="text" id="txt_log_id" disabled="disabled"></div>
 </body>
 
 </html>
